@@ -124,11 +124,9 @@ class Connection:
         if not (move := parse_move(args[1], self._engine.get_board_size())):
             self.respond(f'illegal move: "{args[0]} {args[1]}"')
             return
-
         if not self._engine.play_move(move, color):
             self.respond(f'illegal move: "{args[0]} {args[1]}"')
             return
-
         self.respond()
 
     def _gogui_rules_game_id_cmd(self, _: List[str]) -> None:
@@ -171,13 +169,12 @@ class Connection:
     def _gogui_rules_final_result_cmd(self, _: List[str]) -> None:
         color = self._engine.get_current_player()
         board = self._engine.get_board()
-        if board.get_legal_moves_for(color):
-            self.respond("unknown")
-            return
-        if color_str := format_color(opponent(color)):
+        if not board.get_legal_moves_for(color) and (
+            color_str := format_color(opponent(color))
+        ):
             self.respond(color_str)
-            return
-        self.respond()
+        else:
+            self.respond("unknown")
 
     def _gogui_analyze_cmd(self, _: List[str]) -> None:
         self.respond(
