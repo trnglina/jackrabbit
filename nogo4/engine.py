@@ -1,6 +1,6 @@
 import random
 from copy import copy
-from typing import List, Optional, Union
+from typing import List, Optional
 
 from board import BLACK, Board, GoStone, opponent
 
@@ -58,7 +58,7 @@ class Engine:
 
 
 class Node:
-    def __init__(self, parent: Union["Node", None] = None) -> None:
+    def __init__(self, parent: Optional["Node"] = None) -> None:
         self.parent = parent
         self.wins = 0
         self.visits = 0
