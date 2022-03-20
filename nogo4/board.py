@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 from numpy.typing import NDArray
@@ -85,6 +85,14 @@ class Board:
             if self.is_move_legal_for(move, color):
                 legal_moves.append(move)
         return legal_moves
+
+    def get_random_move_for(self, color: GoStone) -> Optional[int]:
+        points = self.get_empty_points()
+        np.random.shuffle(points)
+        for move in points:
+            if self.is_move_legal_for(move, color):
+                return move
+        return None
 
     def is_move_legal_for(self, point: int, color: GoStone) -> bool:
         if self.board[point] != EMPTY:
