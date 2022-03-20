@@ -1,6 +1,6 @@
 import pexpect
 
-player1='flat_mc_player/nogo_flat_mc.py'
+player1='nogo4/nogo4.py'
 player2='random_player/nogo_random.py' 
 
 win1=0
