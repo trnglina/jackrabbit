@@ -1,6 +1,7 @@
 from typing import List
-from numpy.typing import NDArray
+
 import numpy as np
+from numpy.typing import NDArray
 
 EMPTY = np.uint8(0)
 BLACK = np.uint8(1)

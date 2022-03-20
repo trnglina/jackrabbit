@@ -1,7 +1,8 @@
 import re
 from sys import stderr, stdin, stdout
 from typing import List, Optional
-from board import BLACK, WHITE, EMPTY, BORDER, MAXSIZE, GoStone, opponent
+
+from board import BLACK, BORDER, EMPTY, MAXSIZE, WHITE, GoStone, opponent
 from engine import Engine
 
 

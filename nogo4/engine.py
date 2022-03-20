@@ -1,8 +1,8 @@
-from copy import copy
 import random
+from copy import copy
 from typing import List, Optional, Union
-from xmlrpc.client import Boolean
-from board import GoStone, BLACK, Board, opponent
+
+from board import BLACK, Board, GoStone, opponent
 
 
 class Engine:
@@ -40,7 +40,7 @@ class Engine:
         self._board = Board(self._board.size)
         self._current_player = BLACK
 
-    def play_move(self, point: int, color: GoStone) -> Boolean:
+    def play_move(self, point: int, color: GoStone) -> bool:
         legal = self._board.play_for(point, color)
         if legal:
             self._current_player = opponent(color)
