@@ -1,12 +1,10 @@
 import math
-import random
 from copy import copy
 from typing import List, Optional
 
 from board import BLACK, Board, GoStone, opponent
 
 SIM_C = 1.41
-SIM_N = 1
 SIM_T = 3
 
 
@@ -60,10 +58,8 @@ class Engine:
         while True:
             # Select & Expand
             node = root.select().expand()
-
             # Simulate & Backpropogate
-            for _ in range(SIM_N):
-                node.simulate()
+            node.simulate()
 
         # TODO: Select best move
         return None
@@ -102,5 +98,17 @@ class Node:
         return self
 
     def simulate(self) -> None:
-        # TODO: Implement simulation & backpropogation
-        pass
+        sim_board = copy(self.board)
+        sim_player = self.player
+        while move := sim_board.get_random_move_for(sim_player):
+            sim_board.play_legal_move_for(move, sim_player)
+            sim_player = opponent(sim_player)
+
+        # TODO: Does this handle player switching correctly?
+        node: Optional["Node"] = self
+        value = int(opponent(sim_player) == self.player)
+        while node:
+            node.wins += value
+            node.visits += 1
+            value = 1 - value
+            node = node.parent
