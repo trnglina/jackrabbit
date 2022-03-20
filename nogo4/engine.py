@@ -48,8 +48,7 @@ class Engine:
         self._current_player = BLACK
 
     def play_move(self, point: int, color: GoStone) -> bool:
-        legal = self._board.play_for(point, color)
-        if legal:
+        if legal := self._board.play_for(point, color):
             self._current_player = opponent(color)
         return legal
 

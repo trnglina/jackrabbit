@@ -114,23 +114,18 @@ class Connection:
 
     def _genmove_cmd(self, args: List[str]) -> None:
         color = parse_color(args[0].lower())
-
-        move = self._engine.generate_move(color)
-        if move is None:
+        if (move := self._engine.generate_move(color)) is None:
             self.respond("resign")
             return
-
         self.respond(format_point(move, self._engine.get_board_size()))
 
     def _play_cmd(self, args: List[str]) -> None:
         color = parse_color(args[0].lower())
-        move = parse_move(args[1], self._engine.get_board_size())
-        if not move:
+        if not (move := parse_move(args[1], self._engine.get_board_size())):
             self.respond(f'illegal move: "{args[0]} {args[1]}"')
             return
 
-        legal = self._engine.play_move(move, color)
-        if not legal:
+        if not self._engine.play_move(move, color):
             self.respond(f'illegal move: "{args[0]} {args[1]}"')
             return
 
@@ -150,9 +145,10 @@ class Connection:
 
     def _gogui_rules_side_to_move_cmd(self, _: List[str]) -> None:
         color = self._engine.get_current_player()
-        color_str = format_color(opponent(color))
-        if color_str:
+        if color_str := format_color(opponent(color)):
             self.respond(color_str)
+            return
+        self.respond()
 
     def _gogui_rules_board_cmd(self, _: List[str]) -> None:
         board = self._engine.get_board()
@@ -175,15 +171,13 @@ class Connection:
     def _gogui_rules_final_result_cmd(self, _: List[str]) -> None:
         color = self._engine.get_current_player()
         board = self._engine.get_board()
-        legal_moves = board.get_legal_moves_for(color)
-
-        if legal_moves:
+        if board.get_legal_moves_for(color):
             self.respond("unknown")
             return
-
-        color_str = format_color(opponent(color))
-        if color_str:
+        if color_str := format_color(opponent(color)):
             self.respond(color_str)
+            return
+        self.respond()
 
     def _gogui_analyze_cmd(self, _: List[str]) -> None:
         self.respond(
