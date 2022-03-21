@@ -9,6 +9,7 @@ numTimeout = 0
 
 TIMEOUT = 30
 SAFETY_MARGIN = 1
+NUM_GAMES = 10
 
 
 def getMove(p, color):
@@ -91,7 +92,7 @@ def playSingleGame(alternative=False):
     return result, istimeout
 
 
-def playGames(numGame=10):
+def playGames(numGame=NUM_GAMES):
     global win1, win2, numTimeout
     for i in range(0, numGame):
         if i < numGame / 2:
