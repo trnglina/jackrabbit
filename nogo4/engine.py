@@ -1,6 +1,7 @@
 import math
+import signal
 from copy import copy
-from typing import List, Optional
+from typing import Any, List, Optional, Tuple
 
 from board import BLACK, Board, GoStone, opponent
 
@@ -8,13 +9,22 @@ SIM_C = 1.41
 SIM_T = 3
 
 
+class TimerExpired(Exception):
+    pass
+
+
 class Engine:
     def __init__(self) -> None:
         self._board: Board = Board(7)
         self._current_player: GoStone = BLACK
 
-        self._time_epsilon: float = 0.5
+        self._time_epsilon: float = 0.1
         self._time_limit: float = 30.0
+
+        signal.signal(signal.SIGALRM, self._timer_handler)
+
+    def _timer_handler(self, _signum: Any, _fram: Any) -> None:
+        raise TimerExpired()
 
     def get_name(self) -> str:
         return "NoGo Assignment 4"
@@ -52,27 +62,45 @@ class Engine:
 
     def generate_move(self, color: GoStone) -> Optional[int]:
         # Initialise tree search
-        root = Node(copy(self._board), self._current_player, None)
+        root = Node()
 
-        # TODO: Timeout
-        while True:
-            # Select & Expand
-            node = root.select().expand()
-            # Simulate & Backpropogate
-            node.simulate()
+        try:
+            # Initialise timer
+            signal.setitimer(signal.ITIMER_REAL, self._time_limit - self._time_epsilon)
+            while True:
+                # Initialise board
+                board = copy(self._board)
+                player = color
+                # Select
+                node, player = root.select(board, player)
+                # Expand
+                node, player = node.expand(board, player)
+                # Simulate
+                value = node.simulate(board, player)
+                # Backpropogate
+                node.backpropogate(value)
+        except TimerExpired:
+            signal.setitimer(signal.ITIMER_REAL, 0.0)
 
-        # TODO: Select best move
-        return None
+        # Select best move
+        best = max(root.children, key=lambda child: child.visits)
+        if not best:
+            return None
+        move = best.move
+        assert move
+
+        # Update board with move
+        if not self.play_move(move, self._current_player):
+            raise RuntimeError("BUG: Illegal move generated.")
+        return move
 
 
 class Node:
     def __init__(
-        self, board: Board, player: GoStone, parent: Optional["Node"] = None
+        self, parent: Optional["Node"] = None, move: Optional[int] = None
     ) -> None:
-        self.board = board
-        self.player = player
-
         self.parent = parent
+        self.move = move
         self.wins = 0
         self.visits = 0
         self.children: List[Node] = []
@@ -82,31 +110,38 @@ class Node:
         mean = self.wins / self.visits
         return mean + SIM_C * math.sqrt(math.log(self.parent.visits) / self.visits)
 
-    def select(self) -> "Node":
+    def select(self, board: Board, player: GoStone) -> Tuple["Node", GoStone]:
         node = self
         while node.visits > SIM_T and node.children:
             node = max(node.children, key=lambda child: child._uct_score())
-        return node
+            assert node.move
+            board.play_legal_move_for(node.move, player)
+            player = opponent(player)
+        return node, player
 
-    def expand(self) -> "Node":
-        if move := self.board.get_random_move_for(self.player):
-            child_board = copy(self.board)
-            child_board.play_for(move, self.player)
-            child = Node(child_board, opponent(self.player), self)
-            self.children.append(child)
-            return child
-        return self
+    def expand(self, board: Board, player: GoStone) -> Tuple["Node", GoStone]:
+        # TODO: Do we want to tweak the expansion criteria, so we're not always expanding?
+        node = self
+        if move := board.get_random_move_for(player):
+            node = Node(self, move)
+            self.children.append(node)
+            board.play_legal_move_for(move, player)
+            player = opponent(player)
+        return node, player
 
-    def simulate(self) -> None:
-        sim_board = copy(self.board)
-        sim_player = self.player
-        while move := sim_board.get_random_move_for(sim_player):
-            sim_board.play_legal_move_for(move, sim_player)
+    def simulate(self, board: Board, original_player: GoStone) -> int:
+        # TODO: Is 1 simulation per simulation phase optimal?
+        sim_player = original_player
+        while move := board.get_random_move_for(sim_player):
+            board.play_legal_move_for(move, sim_player)
             sim_player = opponent(sim_player)
 
+        # TODO: Is this the correct value function?
+        return int(sim_player == original_player)
+
+    def backpropogate(self, value: int) -> None:
         # TODO: Does this handle player switching correctly?
         node: Optional["Node"] = self
-        value = int(opponent(sim_player) == self.player)
         while node:
             node.wins += value
             node.visits += 1

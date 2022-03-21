@@ -76,7 +76,7 @@ class Board:
                 return True
         return False
 
-    def get_empty_points(self) -> NDArray[GoStone]:
+    def get_empty_points(self) -> NDArray:
         return np.where(self.board == EMPTY)[0]
 
     def get_legal_moves_for(self, color: GoStone) -> List[int]:
