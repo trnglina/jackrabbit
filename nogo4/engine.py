@@ -107,6 +107,8 @@ class Node:
 
     def _uct_score(self) -> float:
         assert self.parent
+        assert self.visits > 0
+        
         mean = self.wins / self.visits
         return mean + SIM_C * math.sqrt(math.log(self.parent.visits) / self.visits)
 
