@@ -78,7 +78,7 @@ class Engine:
                 # Simulate
                 value = node.simulate(board, player)
                 # Backpropogate
-                node.backpropogate(value)
+                node.backpropagate(value)
         except TimerExpired:
             signal.setitimer(signal.ITIMER_REAL, 0.0)
 
@@ -108,7 +108,7 @@ class Node:
     def _uct_score(self) -> float:
         assert self.parent
         assert self.visits > 0
-        
+
         mean = self.wins / self.visits
         return mean + SIM_C * math.sqrt(math.log(self.parent.visits) / self.visits)
 
@@ -141,7 +141,7 @@ class Node:
         # TODO: Is this the correct value function?
         return int(sim_player == original_player)
 
-    def backpropogate(self, value: int) -> None:
+    def backpropagate(self, value: int) -> None:
         # TODO: Does this handle player switching correctly?
         node: Optional["Node"] = self
         while node:
