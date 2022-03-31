@@ -62,7 +62,7 @@ class Engine:
 
     def generate_move(self, color: GoStone) -> Optional[int]:
         # Initialise tree search
-        root = Node()
+        root = MonteCarloTree()
 
         try:
             # Initialise timer
@@ -95,15 +95,15 @@ class Engine:
         return move
 
 
-class Node:
+class MonteCarloTree:
     def __init__(
-        self, parent: Optional["Node"] = None, move: Optional[int] = None
+        self, parent: Optional["MonteCarloTree"] = None, move: Optional[int] = None
     ) -> None:
         self.parent = parent
         self.move = move
         self.wins = 0
         self.visits = 0
-        self.children: List[Node] = []
+        self.children: List[MonteCarloTree] = []
 
     def _uct_score(self) -> float:
         assert self.parent
@@ -112,7 +112,7 @@ class Node:
         mean = self.wins / self.visits
         return mean + SIM_C * math.sqrt(math.log(self.parent.visits) / self.visits)
 
-    def select(self, board: Board, player: GoStone) -> Tuple["Node", GoStone]:
+    def select(self, board: Board, player: GoStone) -> Tuple["MonteCarloTree", GoStone]:
         node = self
         while node.visits > SIM_T and node.children:
             node = max(node.children, key=lambda child: child._uct_score())
@@ -121,10 +121,10 @@ class Node:
             player = opponent(player)
         return node, player
 
-    def expand(self, board: Board, player: GoStone) -> Tuple["Node", GoStone]:
+    def expand(self, board: Board, player: GoStone) -> Tuple["MonteCarloTree", GoStone]:
         node = self
         if move := board.get_random_move_for(player):
-            node = Node(self, move)
+            node = MonteCarloTree(self, move)
             self.children.append(node)
             board.play_legal_move_for(move, player)
             player = opponent(player)
@@ -141,7 +141,7 @@ class Node:
 
     def backpropagate(self, value: int) -> None:
         # TODO: Does this handle player switching correctly?
-        node: Optional["Node"] = self
+        node: Optional["MonteCarloTree"] = self
         while node:
             node.wins += value
             node.visits += 1
