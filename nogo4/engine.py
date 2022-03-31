@@ -83,9 +83,9 @@ class Engine:
             signal.setitimer(signal.ITIMER_REAL, 0.0)
 
         # Select best move
-        best = max(root.children, key=lambda child: child.visits)
-        if not best:
+        if not root.children:
             return None
+        best = max(root.children, key=lambda child: child.visits)
         move = best.move
         assert move
 
