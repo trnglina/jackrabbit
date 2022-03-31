@@ -1,6 +1,5 @@
 __pycache__
 .mypy_cache
-nogo4_original
 
 *.gtp
 *.html

@@ -122,6 +122,7 @@ class Node:
         return node, player
 
     def expand(self, board: Board, player: GoStone) -> Tuple["Node", GoStone]:
+        # TODO: Do we want to tweak the expansion criteria, so we're not always expanding?
         node = self
         if move := board.get_random_move_for(player):
             node = Node(self, move)
@@ -131,6 +132,7 @@ class Node:
         return node, player
 
     def simulate(self, board: Board, original_player: GoStone) -> int:
+        # TODO: Is 1 simulation per simulation phase optimal?
         sim_player = original_player
         while move := board.get_random_move_for(sim_player):
             board.play_legal_move_for(move, sim_player)

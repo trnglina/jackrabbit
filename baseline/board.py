@@ -18,6 +18,7 @@ class Board:
         self.size = size
         self.ns = size + 1
         self.maxpoint = size * size + 3 * (size + 1)
+        # self.history: List[int] = []
 
         self.board: NDArray[GoStone] = np.full(self.maxpoint, BORDER, dtype=GoStone)
         for row in range(1, self.size + 1):
@@ -42,6 +43,7 @@ class Board:
 
     def __copy__(self) -> "Board":
         copy = Board(self.size)
+        # copy.history = self.history[:]
         copy.board = np.copy(self.board)
         return copy
 
@@ -107,6 +109,7 @@ class Board:
         return True
 
     def play_legal_move_for(self, point: int, color: GoStone) -> None:
+        # self.history.append(point)
         self.board[point] = color
 
     def play_for(self, point: int, color: GoStone) -> bool:
@@ -114,6 +117,10 @@ class Board:
             return False
         self.play_legal_move_for(point, color)
         return True
+
+    # def unplay(self) -> None:
+    #     point = self.history.pop()
+    #     self.board[point] = EMPTY
 
 
 def opponent(color: GoStone) -> GoStone:
