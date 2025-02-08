@@ -1,0 +1,8 @@
+__pycache__
+.mypy_cache
+
+*.gtp
+*.html
+*.dat
+
+profile.py
